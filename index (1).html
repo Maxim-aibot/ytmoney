@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Сайт</title>
+<meta name="description" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&family=Roboto+Condensed:wght@300..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#000000;
+  --red:#FF0000;
+  --red-deep:#8B0000;
+  --white:#FFFFFF;
+  --ash:#8A8A8A;
+  --steel:#2E2E2E;
+  --edge:rgba(255,255,255,.14);
+  --font:"Golos Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --display:"Roboto Condensed","Arial Narrow",Arial,sans-serif;
+  --gut:clamp(20px,5vw,90px);
+}
+:root:not([data-theme="light"]){color-scheme:dark;}
+:root[data-theme="dark"]{color-scheme:dark;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark;}}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  background:var(--void);
+  color:var(--white);
+  font-family:var(--font);
+  font-weight:400;
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body.lenis-active{height:auto;}
+img{max-width:100%;}
+::selection{background:var(--red);color:#fff;}
+a{color:inherit;}
+:focus-visible{outline:2px solid var(--red);outline-offset:4px;}
+
+/* ---------- WebGL stage ---------- */
+#stage{position:fixed;inset:0;z-index:0;background:var(--void);}
+#stage canvas{display:block;width:100%;height:100%;}
+#grain{position:fixed;inset:-50%;z-index:1;pointer-events:none;opacity:.05;
+  background-image:repeating-conic-gradient(#fff 0% 25%, #000 0% 50%);
+  background-size:3px 3px;mix-blend-mode:overlay;}
+.scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 50%, transparent 40%, rgba(0,0,0,.85) 100%);}
+
+/* ---------- Content layer ---------- */
+#shell{position:relative;z-index:2;pointer-events:none;}
+#shell a,#shell button,.tap{pointer-events:auto;}
+
+.rail{position:fixed;top:0;left:0;height:100%;width:var(--gut);z-index:4;pointer-events:none;
+  border-right:1px solid rgba(255,255,255,.07);}
+.rail::after{content:"";position:absolute;left:-1px;top:0;width:1px;background:var(--red);
+  height:var(--rail,0%);box-shadow:0 0 12px 1px var(--red);}
+@media (max-width:820px){.rail{display:none;}}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;
+  align-items:center;padding:22px var(--gut);mix-blend-mode:difference;}
+.mark{font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.14em;}
+.mark i{color:var(--red);font-style:normal;}
+nav .where{font-size:11px;letter-spacing:.22em;color:#bdbdbd;font-weight:600;}
+@media (max-width:640px){nav .where{display:none;}}
+
+section{position:relative;padding:0 var(--gut);}
+
+/* ---------- Hero ---------- */
+#hero{min-height:100svh;display:grid;grid-template-columns:1fr 1.4fr;align-items:center;
+  gap:0;padding-top:14vh;padding-bottom:10vh;}
+#hero .copy{grid-column:1;max-width:30ch;}
+@media (min-width:981px){#hero{grid-template-columns:1fr 1.4fr;}#hero .copy{grid-column:1;}}
+.kicker{font-size:11px;letter-spacing:.3em;color:var(--red);
+  font-weight:700;margin-bottom:26px;display:flex;gap:10px;align-items:center;}
+.kicker::before{content:"";width:34px;height:1px;background:var(--red);box-shadow:0 0 8px var(--red);}
+
+h1{font-family:var(--display);font-size:clamp(46px,7.4vw,118px);line-height:.84;letter-spacing:-.035em;
+  font-weight:900;text-transform:uppercase;}
+h1 .thin{font-weight:400;color:var(--ash);display:block;}
+h1 .glow{color:#fff;text-shadow:0 0 34px rgba(255,0,0,.55),0 0 90px rgba(255,0,0,.25);}
+
+.lede{margin-top:30px;max-width:44ch;color:#c7c7c7;font-size:clamp(15px,1.15vw,17px);line-height:1.62;}
+.lede b{color:#fff;font-weight:700;}
+
+.meter{margin-top:38px;display:flex;gap:34px;flex-wrap:wrap;}
+.meter div{border-left:1px solid var(--red);padding-left:12px;}
+.meter dt{font-family:var(--display);font-size:clamp(22px,2.4vw,34px);font-weight:800;line-height:1;}
+.meter dd{font-size:11px;color:var(--ash);letter-spacing:.14em;margin-top:6px;}
+
+.scroll-hint{position:absolute;bottom:34px;left:var(--gut);font-size:10px;letter-spacing:.3em;
+  color:#6a6a6a;display:flex;align-items:center;gap:12px;}
+.scroll-hint span{display:block;width:60px;height:1px;background:linear-gradient(90deg,var(--red),transparent);}
+
+@media (max-width:980px){
+  #hero{grid-template-columns:1fr;min-height:100svh;align-content:end;padding-top:46vh;padding-bottom:16vh;}
+  #hero .copy{grid-column:1;max-width:none;}
+  .scroll-hint{display:none;}
+}
+
+/* ---------- Generic section head with letter reveal ---------- */
+.reveal{font-family:var(--display);font-size:clamp(34px,5.4vw,92px);line-height:.88;letter-spacing:-.03em;
+  font-weight:900;text-transform:uppercase;}
+.reveal .ch{opacity:.09;transition:none;will-change:opacity;}
+.reveal .ch.hot{color:var(--red);text-shadow:0 0 30px rgba(255,0,0,.5);}
+
+/* ---------- System (asset moves left, copy right) ---------- */
+#system{min-height:130svh;display:grid;grid-template-columns:1fr 1.4fr;
+  align-items:center;padding-top:16vh;padding-bottom:16vh;gap:0;}
+#system .body{grid-column:2;max-width:58ch;}
+.steps{margin-top:54px;display:grid;gap:0;border-top:1px solid var(--edge);}
+.step{display:grid;grid-template-columns:52px 1fr;gap:20px;padding:26px 0;border-bottom:1px solid var(--edge);}
+.step .idx{font-size:12px;color:var(--red);font-weight:800;padding-top:5px;}
+.step h3{font-family:var(--display);font-size:clamp(19px,1.7vw,24px);font-weight:800;letter-spacing:-.01em;}
+.step p{margin-top:9px;color:#a4a4a4;font-size:15px;line-height:1.6;max-width:52ch;}
+@media (max-width:980px){#system{grid-template-columns:1fr;min-height:auto;padding-top:22vh;}
+  #system .body{grid-column:1;}}
+
+/* ---------- Markets ---------- */
+#markets{padding-top:18vh;padding-bottom:18vh;}
+.mkt-head{display:grid;grid-template-columns:1fr 1.4fr;align-items:end;gap:30px;}
+.mkt-head p{grid-column:2;color:#9c9c9c;max-width:46ch;font-size:15px;}
+.table{margin-top:60px;border-top:1px solid var(--white);}
+.row{display:grid;grid-template-columns:1.1fr 2fr 1fr;gap:24px;align-items:baseline;
+  padding:22px 0;border-bottom:1px solid var(--edge);position:relative;}
+.row::before{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;background:var(--red);
+  box-shadow:0 0 10px var(--red);transition:width .5s cubic-bezier(.16,1,.3,1);}
+.row:hover::before,.row:focus-within::before{width:100%;}
+.row .geo{font-family:var(--display);font-size:clamp(24px,3.3vw,46px);font-weight:900;
+  letter-spacing:-.02em;text-transform:uppercase;line-height:1;}
+.row .note{color:#909090;font-size:14px;line-height:1.55;}
+.row .rpm{text-align:right;font-weight:700;font-size:clamp(15px,1.5vw,20px);color:var(--red);}
+@media (max-width:760px){.mkt-head{grid-template-columns:1fr;}.mkt-head p{grid-column:1;}
+  .row{grid-template-columns:1fr auto;}.row .note{grid-column:1/-1;}}
+
+/* ---------- Offers ---------- */
+#offers{padding-top:12vh;padding-bottom:20vh;display:grid;grid-template-columns:1fr 1.4fr;gap:0;}
+#offers .body{grid-column:2;}
+.stack{margin-top:48px;display:grid;gap:14px;}
+.slab{position:relative;padding:30px 30px 30px 34px;background:#050505;border:1px solid var(--edge);
+  overflow:hidden;}
+.slab::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--red);
+  opacity:.55;transition:opacity .4s,box-shadow .4s;}
+.slab:hover::before{opacity:1;box-shadow:0 0 16px 1px var(--red);}
+.slab h4{font-family:var(--display);font-size:clamp(20px,2vw,27px);font-weight:800;letter-spacing:-.015em;}
+.slab p{margin-top:10px;color:#9e9e9e;font-size:15px;max-width:54ch;line-height:1.6;}
+.slab .tag{position:absolute;top:26px;right:28px;font-size:10px;letter-spacing:.2em;color:#666;}
+@media (max-width:980px){#offers{grid-template-columns:1fr;}#offers .body{grid-column:1;}}
+
+/* ---------- CTA ---------- */
+#cta{min-height:104svh;display:grid;place-items:center;text-align:center;padding-top:10vh;padding-bottom:16vh;}
+#cta .reveal{max-width:16ch;margin:0 auto;}
+#cta .sub{margin-top:26px;color:#a0a0a0;max-width:40ch;margin-left:auto;margin-right:auto;font-size:16px;}
+
+.launch{position:relative;display:inline-block;margin-top:66px;padding:0;border:0;background:none;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.launch .core{font-family:var(--display);position:relative;z-index:2;display:block;background:#000;color:#fff;
+  padding:clamp(26px,3.6vw,40px) clamp(38px,6vw,86px);
+  font-size:clamp(17px,2.7vw,36px);font-weight:900;
+  letter-spacing:-.01em;text-transform:uppercase;line-height:1;
+  border:1px solid rgba(255,0,0,.55);
+  box-shadow:0 0 0 0 rgba(255,0,0,.55),0 0 42px rgba(255,0,0,.22) inset;
+  transition:box-shadow .45s cubic-bezier(.16,1,.3,1),letter-spacing .45s,border-color .45s;}
+.launch::before{content:"";position:absolute;inset:-3px;z-index:1;
+  background:conic-gradient(from var(--beam,0deg),transparent 0deg,var(--red) 45deg,#fff 70deg,var(--red) 95deg,transparent 150deg,transparent 360deg);
+  filter:blur(7px);opacity:.85;}
+.launch::after{content:"";position:absolute;inset:-26px;z-index:0;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,0,0,var(--halo,.16)),transparent 78%);
+  transition:opacity .4s;}
+.launch:hover .core,.launch:focus-visible .core{
+  box-shadow:0 0 0 2px rgba(255,0,0,.9),0 0 120px 10px rgba(255,0,0,.45),0 0 70px rgba(255,0,0,.4) inset;
+  border-color:var(--red);letter-spacing:.012em;}
+.under{display:block;margin-top:20px;font-size:11px;letter-spacing:.24em;color:#6f6f6f;}
+
+/* ---------- Footer ---------- */
+footer{position:relative;z-index:2;padding:40px var(--gut) 56px;border-top:1px solid var(--edge);
+  display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap;
+  font-size:11.5px;color:#6b6b6b;letter-spacing:.06em;}
+footer p{max-width:62ch;line-height:1.7;}
+
+/* ---------- Flash overlay ---------- */
+#flash{position:fixed;inset:0;z-index:9;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 50% 50%,rgba(255,60,60,.98),rgba(255,0,0,.9) 45%,rgba(120,0,0,.85) 100%);
+  mix-blend-mode:screen;}
+#wipe{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;background:#000;}
+
+.fallback-note{position:fixed;bottom:12px;left:var(--gut);z-index:6;font-size:10px;color:#444;letter-spacing:.2em;display:none;}
+
+@media (prefers-reduced-motion:reduce){
+  .reveal .ch{opacity:1!important;}
+  .launch::before{filter:blur(6px);}
+}
+</style>
+</head>
+<body>
+
+<div id="stage"><canvas id="gl"></canvas></div>
+<div class="scrim"></div>
+<div id="grain"></div>
+<div class="rail" id="rail"></div>
+
+<nav id="nav"></nav>
+
+<div id="shell">
+  <section id="hero"><div class="copy" id="hero-copy"></div><div class="scroll-hint" id="hint"></div></section>
+  <section id="system"><div class="body" id="system-body"></div></section>
+  <section id="markets"><div id="markets-body"></div></section>
+  <section id="offers"><div class="body" id="offers-body"></div></section>
+  <section id="cta"><div id="cta-body"></div></section>
+  <footer id="foot"></footer>
+</div>
+
+<div id="flash"></div>
+<div id="wipe"></div>
+<div class="fallback-note" id="fbnote">СТАТИЧНЫЙ РЕЖИМ</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+
+<!-- ==========================================================================
+     ВСЁ, ЧТО МОЖНО МЕНЯТЬ, ЛЕЖИТ В ЭТОМ ОДНОМ БЛОКЕ.
+     Правило простое: меняйте текст между кавычками "вот так".
+     Сами кавычки, запятые и скобки не трогайте.
+     Ниже этого блока — движок. Туда лезть не нужно.
+     ========================================================================== -->
+<script>
+const САЙТ = {
+
+  /* --- 1. Куда ведёт кнопка. Вставьте ссылку на свой канал --- */
+  телеграм: "https://t.me/",
+
+  /* --- 2. Цвета. Любой HEX-код, например "#00FF88" --- */
+  цвета: {
+    фон:    "#000000",
+    акцент: "#FF0000",
+    текст:  "#FFFFFF"
+  },
+
+  /* --- 3. Вкладка браузера --- */
+  вкладка: {
+    заголовок: "Автоматизация YouTube на Западе — партнёрские офферы",
+    описание:  "Инфраструктура YouTube-автоматизации под рынки Tier-1 и партнёрские офферы с высоким чеком."
+  },
+
+  /* --- 4. Верхняя строка --- */
+  шапка: {
+    логотип:      "BULASH",   // до косой черты
+    логотипХвост: "YT",        // после косой черты
+    справа:       ""
+  },
+
+  /* --- 5. Первый экран ---
+     заголовок собирается построчно.
+     яркая: true  — белая строка со свечением
+     яркая: false — серая тонкая строка
+     Строк можно добавить или убрать сколько угодно. */
+  первыйЭкран: {
+    надпись: "Только рынки Tier-1",
+    заголовок: [
+      { текст: "Безликие", яркая: true  },
+      { текст: "каналы,",  яркая: false },
+      { текст: "западные", яркая: true  },
+      { текст: "деньги.",  яркая: false }
+    ],
+    описание: "Мы строим и ведём YouTube-каналы под самые дорогие рекламные рынки мира, а поверх их трафика ставим <b>партнёрские офферы с высоким чеком</b>.",
+    цифры: [
+      { число: "19",    подпись: "РЫНКОВ В РАБОТЕ" },
+      { число: "24/7", подпись: "ЦИКЛ ЗАГРУЗОК"   },
+      { число: "3",    подпись: "СЛОЯ ДОХОДА"     }
+    ],
+    подсказка: "СКРОЛЛ"
+  },
+
+  /* --- 6. Блок «как это работает» ---
+     красноеСлово: номер слова в заголовке, которое станет красным.
+     Считайте слова по порядку: 1, 2, 3... Поставьте 0, чтобы красного не было.
+     Пунктов может быть любое количество. */
+  система: {
+    заголовок: "Машина, которая стоит за каналом",
+    красноеСлово: 5,
+    пункты: [
+      { номер: "01", название: "Инфраструктура",
+        текст: "Юрлицо канала, путь к монетизации и целевой рынок определяются до первого кадра. География задаёт потолок — поэтому решается первой." },
+      { номер: "02", название: "Контент-машина",
+        текст: "Ресёрч, сценарий, озвучка, монтаж, обложка, публикация — каждый этап закреплён за своим специалистом и идёт по фиксированному циклу. Канал выпускает ролики, даже если вы не открываете ноутбук." },
+      { номер: "03", название: "Слой офферов",
+        текст: "Реклама YouTube — это пол, а не бизнес. Та же аудитория получает партнёрские офферы, которые платят за квалифицированного клиента, а не за тысячу просмотров." }
+    ]
+  },
+
+  /* --- 7. Таблица рынков. Строк может быть любое количество --- */
+  рынки: {
+    заголовок: "Где лежат деньги",
+    красноеСлово: 3,
+    описание: "Тот же ролик, то же время просмотра — и другой паспорт у зрителя. Выплата меняется на порядок. Ориентировочные диапазоны RPM по стране аудитории.",
+    строки: [
+      { страна: "США",            ставка: "$12 – $28", комментарий: "Самый глубокий пул рекламодателей и сильнейшая партнёрская инфраструктура. Главная цель любого запуска." },
+      { страна: "Великобритания", ставка: "$9 – $22",  комментарий: "Пересечение с США по языку, но ниже конкуренция в финансах и бытовых услугах." },
+      { страна: "Канада",         ставка: "$8 – $20",  комментарий: "Тянет американский контент почти без адаптации. Сильные рекламодатели в страховании и софте." },
+      { страна: "Австралия",      ставка: "$8 – $19",  комментарий: "Аудитория меньше, зрители терпеливее, премиальные CPM в недвижимости и здоровье." },
+      { страна: "Германия",       ставка: "$7 – $17",  комментарий: "Сильнейший неанглоязычный рынок Европы. Барьер — локализация, именно поэтому он и платит." }
+    ]
+  },
+
+  /* --- 8. Блоки про источники дохода --- */
+  офферы: {
+    заголовок: "Три слоя, на которых зарабатывает канал",
+    красноеСлово: 6,
+    блоки: [
+      { метка: "СЛОЙ ПЕРВЫЙ", название: "Реклама платформы",
+        текст: "Предсказуемо, растёт медленно и полностью зависит от того, где живут зрители. Это финансирует операцию и доказывает, что аудитория настоящая." },
+      { метка: "СЛОЙ ВТОРОЙ", название: "Партнёрские офферы с высоким чеком",
+        текст: "Софт, финансовые продукты и обучение, которые платят от сотен до тысяч долларов за закрытого клиента. Одна конверсия способна обогнать месяц рекламных выплат того же канала." },
+      { метка: "СЛОЙ ТРЕТИЙ", название: "Прямые интеграции",
+        текст: "Когда канал занимает нишу, рекламодатели приходят сами и торгуются за качество аудитории, а не за количество просмотров." }
+    ]
+  },
+
+  /* --- 9. Кнопка и последний экран --- */
+  призыв: {
+    заголовок: "Забери систему",
+    красноеСлово: 2,
+    текст: "Разборы запусков, списки офферов и сводки по рынкам выходят сначала в канале. Вход открыт прямо сейчас.",
+    кнопка: "Запустить монетизацию",
+    подКнопкой: ""
+  },
+
+  /* --- 10. Подвал. Последняя точка сайта — здесь --- */
+  подвал: {
+    текст: "Цифры на странице — ориентировочные рыночные диапазоны, а не прогноз вашего результата. Это не гарантия дохода и не финансовая рекомендация."
+  }
+};
+</script>
+<!-- ======================= КОНЕЦ РЕДАКТИРУЕМОЙ ЧАСТИ ======================= -->
+
+
+<script>
+/* ===========================================================================
+   ДВИЖОК. Ниже менять ничего не нужно — всё берётся из блока САЙТ выше.
+   =========================================================================== */
+
+const TELEGRAM_URL = https://t.me/BulashImport;
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FINE = matchMedia("(pointer: fine)").matches;
+
+/* --- сборка страницы из блока САЙТ --- */
+function отрисовать(){
+  const C = САЙТ;
+  const q = id => document.getElementById(id);
+
+  document.title = C.вкладка.заголовок;
+  document.querySelector('meta[name=description]').content = C.вкладка.описание;
+  const r = document.documentElement.style;
+  r.setProperty("--void", C.цвета.фон);
+  r.setProperty("--red", C.цвета.акцент);
+  r.setProperty("--white", C.цвета.текст);
+
+  const лого = `<div class="mark">${C.шапка.логотип}<i>/</i>${C.шапка.логотипХвост}</div>`;
+  q("nav").innerHTML = лого + `<div class="where">${C.шапка.справа}</div>`;
+
+  const h = C.первыйЭкран;
+  q("hero-copy").innerHTML =
+    `<div class="kicker">${h.надпись}</div>
+     <h1>${h.заголовок.map(л =>
+        `<span class="${л.яркая ? "glow" : "thin"}">${л.текст}</span>`).join("")}</h1>
+     <p class="lede">${h.описание}</p>
+     <dl class="meter">${h.цифры.map(ц =>
+        `<div><dt>${ц.число}</dt><dd>${ц.подпись}</dd></div>`).join("")}</dl>`;
+  q("hint").innerHTML = `<span></span>${h.подсказка}`;
+
+  const шапкаБлока = о =>
+    `<h2 class="reveal" data-hot="${(о.красноеСлово || 0) - 1}">${о.заголовок}</h2>`;
+
+  const s = C.система;
+  q("system-body").innerHTML = шапкаБлока(s) +
+    `<div class="steps">${s.пункты.map(п =>
+      `<div class="step"><div class="idx">${п.номер}</div>
+        <div><h3>${п.название}</h3><p>${п.текст}</p></div></div>`).join("")}</div>`;
+
+  const m = C.рынки;
+  q("markets-body").innerHTML =
+    `<div class="mkt-head">${шапкаБлока(m)}<p>${m.описание}</p></div>
+     <div class="table">${m.строки.map(стр =>
+      `<div class="row tap" tabindex="0"><div class="geo">${стр.страна}</div>
+        <div class="note">${стр.комментарий}</div>
+        <div class="rpm">${стр.ставка}</div></div>`).join("")}</div>`;
+
+  const o = C.офферы;
+  q("offers-body").innerHTML = шапкаБлока(o) +
+    `<div class="stack">${o.блоки.map(б =>
+      `<div class="slab"><span class="tag">${б.метка}</span>
+        <h4>${б.название}</h4><p>${б.текст}</p></div>`).join("")}</div>`;
+
+  const c = C.призыв;
+  q("cta-body").innerHTML = шапкаБлока(c) +
+    `<p class="sub">${c.текст}</p>
+     <button class="launch" id="launch" aria-label="${c.кнопка}">
+       <span class="core">${c.кнопка}</span></button>
+     <span class="under">${c.подКнопкой}</span>`;
+
+  q("foot").innerHTML = лого + `<p>${C.подвал.текст}</p>`;
+}
+отрисовать();
+
+/* --- плавный скролл (Lenis, с обычным скроллом как запасным вариантом) --- */
+let lenis = null;
+(function(){
+  const L = window.Lenis || (window.lenis && window.lenis.default);
+  if (!L || REDUCED) return;
+  try{
+    lenis = new L({ duration:1.25, smoothWheel:true, wheelMultiplier:.95, touchMultiplier:1.6,
+      easing:t => Math.min(1, 1.001 - Math.pow(2, -10*t)) });
+    document.body.classList.add("lenis-active");
+  }catch(e){ lenis = null; }
+})();
+
+/* --- положение скролла, читается каждый кадр --- */
+const S = { y:0, max:1, p:0, vh:innerHeight, vw:innerWidth };
+function measure(){
+  S.vh = innerHeight; S.vw = innerWidth;
+  S.max = Math.max(1, document.documentElement.scrollHeight - S.vh);
+}
+measure();
+addEventListener("resize", measure);
+function readScroll(){
+  S.y = lenis ? lenis.scroll : (scrollY || document.documentElement.scrollTop);
+  S.p = Math.min(1, Math.max(0, S.y / S.max));
+  document.getElementById("rail").style.setProperty("--rail", (S.p*100).toFixed(2)+"%");
+}
+
+/* --- побуквенное проявление заголовков --- */
+const reveals = [];
+document.querySelectorAll(".reveal").forEach(el => {
+  const words = el.textContent.trim().split(/\s+/);
+  el.textContent = "";
+  const chars = [];
+  words.forEach((w, wi) => {
+    const wrap = document.createElement("span");
+    wrap.className = "wd";
+    wrap.style.display = "inline-block";
+    wrap.style.whiteSpace = "nowrap";
+    [...w].forEach(c => {
+      const sp = document.createElement("span");
+      sp.className = "ch"; sp.textContent = c;
+      sp.style.display = "inline-block";
+      wrap.appendChild(sp); chars.push(sp);
+    });
+    el.appendChild(wrap);
+    if (wi < words.length - 1) el.appendChild(document.createTextNode(" "));
+  });
+  const hot = parseInt(el.dataset.hot || "-1", 10);
+  const w = el.querySelectorAll(".wd")[hot];
+  if (hot >= 0 && w) w.querySelectorAll(".ch").forEach(c => c.classList.add("hot"));
+  reveals.push({ el, chars });
+});
+function paintReveals(){
+  if (REDUCED) return;
+  for (const r of reveals){
+    const box = r.el.getBoundingClientRect();
+    const t = 1 - (box.top - S.vh*0.22) / (S.vh*0.62);
+    const prog = Math.min(1.35, Math.max(0, t));
+    const n = r.chars.length;
+    for (let i=0;i<n;i++){
+      const a = 0.09 + 0.91 * Math.min(1, Math.max(0, (prog*n - i)/6));
+      r.chars[i].style.opacity = a.toFixed(3);
+    }
+  }
+}
+
+/* --- 3D-сцена --- */
+let three = null;
+function initGL(){
+  if (typeof THREE === "undefined") throw new Error("three missing");
+  const canvas = document.getElementById("gl");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:"high-performance" });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(0x000000, 1);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 8.4);
+
+  /* --- the asset group --- */
+  const asset = new THREE.Group();
+  scene.add(asset);
+  const solids = new THREE.Group();
+  asset.add(solids);
+
+  /* Glossy black play button, extruded + bevelled */
+  const tri = new THREE.Shape();
+  const R = 1.34, r = 0.2;
+  tri.moveTo(-R*0.62,  R*0.92);
+  tri.lineTo( R*0.98,  0.0);
+  tri.lineTo(-R*0.62, -R*0.92);
+  tri.closePath();
+  const playGeo = new THREE.ExtrudeGeometry(tri, {
+    depth:0.46, bevelEnabled:true, bevelThickness:0.11, bevelSize:0.11, bevelSegments:6, curveSegments:24
+  });
+  playGeo.center();
+  const playMat = new THREE.MeshPhysicalMaterial({
+    color:0x08080a, metalness:0.92, roughness:0.14, clearcoat:1.0, clearcoatRoughness:0.06,
+    reflectivity:1.0, envMapIntensity:1.0
+  });
+  const play = new THREE.Mesh(playGeo, playMat);
+  solids.add(play);
+
+  /* Red rim edge tracing the play button silhouette */
+  const playEdges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(playGeo, 26),
+    new THREE.LineBasicMaterial({ color:0xff0000, transparent:true, opacity:0.65 })
+  );
+  solids.add(playEdges);
+
+  /* Neon-red wireframe bounding box */
+  const boxSize = 3.5;
+  const box = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(boxSize, boxSize, boxSize)),
+    new THREE.LineBasicMaterial({ color:0xff0000, transparent:true, opacity:0.5 })
+  );
+  asset.add(box);
+  const boxOuter = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(boxSize*1.5, boxSize*1.5, boxSize*1.5)),
+    new THREE.LineBasicMaterial({ color:0xffffff, transparent:true, opacity:0.08 })
+  );
+  asset.add(boxOuter);
+
+  /* Currency cubes drifting inside the cage */
+  const cubeGeo = new THREE.BoxGeometry(0.22, 0.22, 0.22);
+  const cubeMat = new THREE.MeshPhysicalMaterial({ color:0x101012, metalness:0.95, roughness:0.22, clearcoat:0.8 });
+  const cubes = [];
+  for (let i=0;i<18;i++){
+    const m = new THREE.Mesh(cubeGeo, cubeMat);
+    const a = Math.random()*Math.PI*2, rad = 1.7 + Math.random()*1.1;
+    m.userData = { a, rad, yb:(Math.random()-0.5)*2.4, sp:0.1+Math.random()*0.28, ph:Math.random()*9 };
+    solids.add(m); cubes.push(m);
+  }
+
+  /* Glowing fibre-optic strands */
+  const strands = new THREE.Group();
+  asset.add(strands);
+  for (let i=0;i<5;i++){
+    const pts = [];
+    for (let j=0;j<7;j++){
+      const t = j/6;
+      pts.push(new THREE.Vector3(
+        Math.sin(t*Math.PI*2 + i)*1.9 + (Math.random()-0.5)*0.5,
+        (t-0.5)*4.2,
+        Math.cos(t*Math.PI*2 + i*1.7)*1.9 + (Math.random()-0.5)*0.5
+      ));
+    }
+    const curve = new THREE.CatmullRomCurve3(pts);
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(curve, 90, 0.016, 6, false),
+      new THREE.MeshBasicMaterial({ color:0xff1414, transparent:true, opacity:0.85, blending:THREE.AdditiveBlending })
+    );
+    tube.userData.sp = 0.05 + i*0.014;
+    strands.add(tube);
+  }
+
+  /* --- lighting: hidden red rim behind, soft white fill in front --- */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.06));
+  const rim = new THREE.PointLight(0xff0000, 26, 26, 2);
+  rim.position.set(0.6, 1.2, -4.2);
+  scene.add(rim);
+  const rim2 = new THREE.PointLight(0xff2a2a, 12, 22, 2);
+  rim2.position.set(-3.2, -1.4, -2.6);
+  scene.add(rim2);
+  const fill = new THREE.DirectionalLight(0xffffff, 1.15);
+  fill.position.set(1.4, 1.8, 6);
+  scene.add(fill);
+  const kick = new THREE.DirectionalLight(0xffffff, 0.35);
+  kick.position.set(-4, 2, 3);
+  scene.add(kick);
+
+  /* --- disintegration particles (curl noise) --- */
+  const srcPos = playGeo.attributes.position.array;
+  const COUNT = 9000;
+  const pPos = new Float32Array(COUNT*3);
+  const pSeed = new Float32Array(COUNT*3);
+  const verts = srcPos.length/3;
+  for (let i=0;i<COUNT;i++){
+    const v = (Math.random()*verts)|0;
+    pPos[i*3]   = srcPos[v*3]   + (Math.random()-0.5)*0.05;
+    pPos[i*3+1] = srcPos[v*3+1] + (Math.random()-0.5)*0.05;
+    pPos[i*3+2] = srcPos[v*3+2] + (Math.random()-0.5)*0.05;
+    pSeed[i*3]   = Math.random();
+    pSeed[i*3+1] = Math.random();
+    pSeed[i*3+2] = Math.random();
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+  pGeo.setAttribute("aSeed", new THREE.BufferAttribute(pSeed, 3));
+
+  const NOISE = `
+  vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+  vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+  vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+  vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+  float snoise(vec3 v){
+    const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+    vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+    vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+    vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+    i=mod289(i);
+    vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+    float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+    vec4 j=p-49.0*floor(p*ns.z*ns.z);
+    vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+    vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+    vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+    vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+    vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+    vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+    vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+    p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+    vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+    return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+  }
+  vec3 pot(vec3 p){
+    return vec3(snoise(p), snoise(p+vec3(31.4,17.7,9.2)), snoise(p+vec3(-7.1,5.3,21.9)));
+  }
+  vec3 curl(vec3 p){
+    float e=0.16; vec3 dx=vec3(e,0.,0.), dy=vec3(0.,e,0.), dz=vec3(0.,0.,e);
+    vec3 px0=pot(p-dx), px1=pot(p+dx);
+    vec3 py0=pot(p-dy), py1=pot(p+dy);
+    vec3 pz0=pot(p-dz), pz1=pot(p+dz);
+    float cx=(py1.z-py0.z)-(pz1.y-pz0.y);
+    float cy=(pz1.x-pz0.x)-(px1.z-px0.z);
+    float cz=(px1.y-px0.y)-(py1.x-py0.x);
+    return normalize(vec3(cx,cy,cz)+1e-5);
+  }`;
+
+  const particleMat = new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    uniforms:{ uTime:{value:0}, uProgress:{value:0}, uSize:{value: Math.min(devicePixelRatio,2)*2.2 } },
+    vertexShader: NOISE + `
+      attribute vec3 aSeed;
+      uniform float uTime; uniform float uProgress; uniform float uSize;
+      varying float vA; varying float vMix;
+      void main(){
+        float d = uProgress;
+        float delay = aSeed.z * 0.35;
+        float k = clamp((d - delay) / (1.0 - delay), 0.0, 1.0);
+        vec3 pos = position;
+        vec3 c = curl(pos*0.55 + aSeed*3.0 + uTime*0.12);
+        pos += c * k * 3.4 * (0.45 + aSeed.x);
+        pos += normalize(pos + 0.001) * k * k * 2.6 * (0.35 + aSeed.y);
+        pos.y += k * k * 1.15;
+        vA = (1.0 - smoothstep(0.55, 1.0, k)) * (0.35 + aSeed.x * 0.8);
+        vMix = k;
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = uSize * (1.0 + k * 1.8) * (260.0 / max(0.001, -mv.z));
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader:`
+      varying float vA; varying float vMix;
+      void main(){
+        vec2 uv = gl_PointCoord - 0.5;
+        float m = 1.0 - smoothstep(0.18, 0.5, length(uv));
+        if (m <= 0.001) discard;
+        vec3 col = mix(vec3(1.0,0.96,0.94), vec3(1.0,0.05,0.02), clamp(vMix*1.5,0.0,1.0));
+        gl_FragColor = vec4(col, m * vA);
+      }`
+  });
+  const particles = new THREE.Points(pGeo, particleMat);
+  particles.visible = false;
+  solids.add(particles);
+
+  /* --- post-processing: bloom --- */
+  let composer = null;
+  if (THREE.EffectComposer && THREE.UnrealBloomPass){
+    composer = new THREE.EffectComposer(renderer);
+    composer.addPass(new THREE.RenderPass(scene, camera));
+    const bloom = new THREE.UnrealBloomPass(
+      new THREE.Vector2(innerWidth, innerHeight), 0.95, 0.55, 0.19);
+    composer.addPass(bloom);
+    composer.bloom = bloom;
+  }
+
+  /* --- orbit controls, cursor-mapped --- */
+  let controls = null;
+  if (THREE.OrbitControls && FINE){
+    controls = new THREE.OrbitControls(camera, canvas);
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.055;
+    controls.rotateSpeed = 0.42;
+    controls.minPolarAngle = Math.PI*0.28;
+    controls.maxPolarAngle = Math.PI*0.72;
+  }
+
+  return { renderer, scene, camera, composer, controls, asset, solids, play, playEdges,
+           box, boxOuter, strands, cubes, particles, particleMat, rim, fill };
+}
+
+try { three = initGL(); }
+catch(err){
+  console.warn("WebGL stage unavailable:", err);
+  document.getElementById("stage").style.display = "none";
+  document.getElementById("fbnote").style.display = "block";
+}
+
+/* --- траектория 3D-объекта при скролле --- */
+const KEYS = [
+  { p:0.00, x: 2.45, y: 0.00, z: 0.0,  s:1.00, rz: 0.00 },
+  { p:0.26, x: 0.20, y: 0.18, z:-0.6,  s:0.74, rz: 0.10 },
+  { p:0.46, x:-2.55, y: 0.10, z:-1.2,  s:0.55, rz: 0.18 },
+  { p:0.70, x:-2.70, y:-0.15, z:-1.4,  s:0.50, rz: 0.26 },
+  { p:0.88, x:-0.60, y: 0.05, z:-0.4,  s:0.66, rz: 0.12 },
+  { p:1.00, x: 0.00, y: 0.10, z: 0.6,  s:0.88, rz: 0.00 }
+];
+function sample(p){
+  for (let i=0;i<KEYS.length-1;i++){
+    const a = KEYS[i], b = KEYS[i+1];
+    if (p >= a.p && p <= b.p){
+      let t = (p - a.p) / (b.p - a.p);
+      t = t*t*(3-2*t); // smoothstep
+      return { x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:a.z+(b.z-a.z)*t,
+               s:a.s+(b.s-a.s)*t, rz:a.rz+(b.rz-a.rz)*t };
+    }
+  }
+  return KEYS[KEYS.length-1];
+}
+
+/* --- курсор --- */
+const ptr = { x:0, y:0, tx:0, ty:0 };
+addEventListener("pointermove", e => {
+  ptr.tx = (e.clientX / innerWidth) * 2 - 1;
+  ptr.ty = (e.clientY / innerHeight) * 2 - 1;
+}, { passive:true });
+
+/* --- главный цикл отрисовки --- */
+let disintegrating = false, disStart = 0;
+const cur = { x:2.45, y:0, z:0, s:1, rz:0 };
+let beam = 0;
+const btn = document.getElementById("launch");
+
+function frame(time){
+  requestAnimationFrame(frame);
+  if (lenis) lenis.raf(time);
+  readScroll();
+  paintReveals();
+
+  // rotating conic border-beam on the CTA
+  beam = (beam + 1.9) % 360;
+  btn.style.setProperty("--beam", beam + "deg");
+
+  if (!three) return;
+  const t = time * 0.001;
+  const narrow = S.vw < 981;
+
+  // scroll-driven transform
+  const k = sample(S.p);
+  const xScale = narrow ? 0.18 : (S.vw < 1400 ? 0.82 : 1);
+  const yOff = narrow ? 1.45 - S.p*0.8 : 0;
+  const sScale = narrow ? 0.72 : 1;
+
+  cur.x += (k.x*xScale - cur.x) * 0.075;
+  cur.y += (k.y + yOff - cur.y) * 0.075;
+  cur.z += (k.z - cur.z) * 0.075;
+  cur.s += (k.s*sScale - cur.s) * 0.075;
+  cur.rz += (k.rz - cur.rz) * 0.075;
+
+  three.asset.position.set(cur.x, cur.y, cur.z);
+  three.asset.scale.setScalar(cur.s);
+  three.asset.rotation.z = cur.rz;
+
+  // continuous slow ambient idle spin + pointer parallax
+  ptr.x += (ptr.tx - ptr.x) * 0.05;
+  ptr.y += (ptr.ty - ptr.y) * 0.05;
+  three.solids.rotation.y = t * 0.16 + ptr.x * 0.34;
+  three.solids.rotation.x = Math.sin(t * 0.34) * 0.075 + ptr.y * 0.16;
+  three.box.rotation.y = -t * 0.07;
+  three.box.rotation.x = t * 0.045;
+  three.boxOuter.rotation.y = t * 0.035;
+  three.strands.rotation.y = t * 0.09;
+  three.strands.children.forEach((s,i) => {
+    s.material.opacity = 0.45 + Math.sin(t*1.6 + i*1.3) * 0.32;
+  });
+  three.playEdges.material.opacity = 0.45 + Math.sin(t*1.1)*0.2;
+
+  // drifting cubes
+  three.cubes.forEach(m => {
+    const d = m.userData;
+    const a = d.a + t * d.sp;
+    m.position.set(Math.cos(a)*d.rad, d.yb + Math.sin(t*0.7 + d.ph)*0.28, Math.sin(a)*d.rad);
+    m.rotation.x = t*d.sp*2.2; m.rotation.y = t*d.sp*1.6;
+  });
+
+  // rim light breathing
+  three.rim.intensity = 24 + Math.sin(t*0.9) * 5;
+
+  if (three.controls) three.controls.update();
+
+  // disintegration
+  if (disintegrating){
+    const e = Math.min(1, (performance.now() - disStart) / 620);
+    three.particleMat.uniforms.uProgress.value = e;
+    three.solids.children.forEach(c => { if (c !== three.particles) c.visible = false; });
+    three.box.material.opacity = 0.5 * (1-e);
+    three.boxOuter.material.opacity = 0.08 * (1-e);
+    three.strands.visible = e < 0.6;
+    if (three.composer) three.composer.bloom.strength = 0.95 + e * 2.6;
+  }
+  three.particleMat.uniforms.uTime.value = t;
+
+  if (three.composer) three.composer.render(); else three.renderer.render(three.scene, three.camera);
+}
+requestAnimationFrame(frame);
+
+addEventListener("resize", () => {
+  if (!three) return;
+  three.camera.aspect = innerWidth / innerHeight;
+  three.camera.updateProjectionMatrix();
+  three.renderer.setSize(innerWidth, innerHeight);
+  if (three.composer) three.composer.setSize(innerWidth, innerHeight);
+});
+
+/* --- кнопка: вспышка, распад, переход в Telegram --- */
+const flash = document.getElementById("flash");
+const wipe = document.getElementById("wipe");
+
+btn.addEventListener("pointermove", e => {
+  const b = btn.getBoundingClientRect();
+  const dx = (e.clientX - (b.left + b.width/2)) / b.width;
+  const dy = (e.clientY - (b.top + b.height/2)) / b.height;
+  btn.style.setProperty("--halo", (0.34 - Math.hypot(dx,dy)*0.12).toFixed(3));
+});
+btn.addEventListener("pointerleave", () => btn.style.setProperty("--halo", ".16"));
+
+btn.addEventListener("click", () => {
+  if (disintegrating) return;
+  disintegrating = true;
+  disStart = performance.now();
+  if (three) three.particles.visible = true;
+  if (lenis) lenis.stop();
+
+  // red bloom overlay flash
+  flash.animate(
+    [{opacity:0},{opacity:.92, offset:.12},{opacity:.28, offset:.45},{opacity:0}],
+    { duration:620, easing:"cubic-bezier(.2,.8,.2,1)" }
+  );
+  wipe.animate([{opacity:0},{opacity:0, offset:.72},{opacity:1}], { duration:620, fill:"forwards" });
+  document.getElementById("shell").animate(
+    [{opacity:1, filter:"blur(0px)"},{opacity:0, filter:"blur(14px)"}],
+    { duration:520, fill:"forwards", easing:"cubic-bezier(.6,0,.9,.2)" }
+  );
+
+  setTimeout(() => { window.location.href = TELEGRAM_URL; }, 600);
+});
+
+/* keyboard parity */
+btn.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") e.preventDefault(); });
+
+setTimeout(measure, 400);
+addEventListener("load", () => setTimeout(measure, 200));
+
+</script>
+</body>
+</html>
